@@ -1,0 +1,13 @@
+services:
+  jellyfin:
+    image: jellyfin/jellyfin
+    container_name: media-server-jellyfin
+    user: uid:gid
+    network_mode: "host"
+    volumes:
+      - "$HOMELAB_CONTAINERS_DIR/media-server.dev:"
+      - type: bind
+        source: $HOMELAB_CONTAINERS_DIR/media-server.dev/config
+        target: /config
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
