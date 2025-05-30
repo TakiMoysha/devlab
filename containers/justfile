@@ -1,4 +1,12 @@
-# 
+set dotenv-load
+
+# when: 
+# `--volume jellyfin-cache:/cache:Z` - source:destination:options, Z - zfs storage driver, for 
+
+gen-env username password:
+  echo "CONTAINERS_S3_USER={{username}}" >> .env
+  echo "CONTAINERS_S3_PASSWORD={{password}}" >> .env
+
 podman-rund-jellyfin:
   podman run \
     --detach \
@@ -12,3 +20,21 @@ podman-rund-jellyfin:
     --volume jellyfin-config:/config:Z \
     --mount type=bind,source=$STOREDIR,destination=/media,ro=true,relabel=private \
     docker.io/jellyfin/jellyfin:latest
+
+
+podman-rund-minio:
+  podman run \
+    --detach \
+    --label "io.containers.autoupdate=registry" \
+    --name s3-server \
+    --publish 9000:9000 \
+    --publish 9001:9001 \
+    --rm \
+    --user $(id -u):$(id -g) \
+    --userns keep-id \
+    --volume $STOREDIR/containers/s3:/data \
+    -e "MINIO_ROOT_USER=$CONTAINERS_S3_USER" \
+    -e "MINIO_ROOT_PASSWORD=$CONTAINERS_S3_PASSWORD" \
+    quay.io/minio/minio server /data --console-address ":9001"
+
+
