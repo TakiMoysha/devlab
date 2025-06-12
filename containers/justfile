@@ -3,6 +3,8 @@ set dotenv-load
 # when: 
 # `--volume jellyfin-cache:/cache:Z` - source:destination:options, Z - zfs storage driver, for 
 
+#--device /dev/dri:/dev/dri:rwm \ - ?
+
 gen-env username password:
   echo "CONTAINERS_S3_USER={{username}}" >> .env
   echo "CONTAINERS_S3_PASSWORD={{password}}" >> .env
@@ -16,6 +18,7 @@ podman-rund-jellyfin:
     --rm \
     --user $(id -u):$(id -g) \
     --userns keep-id \
+    --device nvidia.com/gpu=0 \
     --volume jellyfin-cache:/cache:Z \
     --volume jellyfin-config:/config:Z \
     --mount type=bind,source=$STOREDIR,destination=/media,ro=true,relabel=private \
@@ -38,3 +41,7 @@ podman-rund-minio:
     quay.io/minio/minio server /data --console-address ":9001"
 
 
+podman-test-nvidia:
+  podman run --rm \
+  --device nvidia.com/gpu=0 \
+  nvidia/cuda:11.0.3-base-ubuntu20.04 nvidia-smi
