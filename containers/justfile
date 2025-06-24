@@ -45,3 +45,8 @@ podman-test-nvidia:
   podman run --rm \
   --device nvidia.com/gpu=0 \
   nvidia/cuda:11.0.3-base-ubuntu20.04 nvidia-smi
+
+podman-rund-dokku:
+  echo "TODO"
+  # podman run 
+
