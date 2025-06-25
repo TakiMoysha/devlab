@@ -1,7 +1,7 @@
 services:
   jellyfin:
     image: jellyfin/jellyfin
-    container_name: media-server-jellyfin
+    container_name: media-server.homelab.dev
     user: uid:gid
     network_mode: "host"
     volumes:

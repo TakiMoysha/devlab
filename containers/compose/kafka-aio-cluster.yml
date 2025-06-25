@@ -1,0 +1,121 @@
+services:
+  openldap:
+    build: ldap
+    hostname: ldap
+    container_name: openldap.cont.dev
+    porst:
+      - 389:389
+      - 636:636
+    environment:
+      LDAP_TLS_VERIFY_CLIENT: try
+
+  # ==================================================================================
+  zookeeper-1:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper-1.cont.dev
+    restart: always
+    user: root
+    ports:
+      - 2181:2181
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_OPTS: -Djava.security.auth.login.config=/etc/kafka/zookeeper_server_jaas.conf
+      ZOOKEEPER_STANDALONE_ENABLED: false
+      ZOOKEEPER_SERVERS: zookeeper-1:2887:3887;zookeeper-2:2888:3888;zookeeper-3:2889:3889
+    volumes:
+      - ../volumes/zookeeper_server_jaas.conf:/etc/kafka/zookeeper_server_jaas.conf
+
+  zookeeper-2:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper-2.cont.dev
+    restart: always
+    user: root
+    ports:
+      - 2182:2182
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2182
+      ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_OPTS: -Djava.security.auth.login.config=/etc/kafka/zookeeper_server_jaas.conf
+      ZOOKEEPER_STANDALONE_ENABLED: false
+      ZOOKEEPER_SERVERS: zookeeper-1:2887:3887;zookeeper-2:2888:3888;zookeeper-3:2889:3889
+    volumes:
+      - ../volumes/zookeeper_server_jaas.conf:/etc/kafka/zookeeper_server_jaas.conf
+
+  zookeeper-3:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper-3.cont.dev
+    restart: always
+    user: root
+    ports:
+      - 2183:2183
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2183
+      ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_OPTS: -Djava.security.auth.login.config=/etc/kafka/zookeeper_server_jaas.conf
+      ZOOKEEPER_STANDALONE_ENABLED: false
+      ZOOKEEPER_SERVERS: zookeeper-1:2887:3887;zookeeper-2:2888:3888;zookeeper-3:2889:3889
+    volumes:
+      - ../volumes/zookeeper_server_jaas.conf:/etc/kafka/zookeeper_server_jaas.conf
+
+  # ==================================================================================
+  broker-1:
+    image: confluentinc/cp-kafka:latest
+    container_name: broker-kafka-1.cont.dev
+    user: root
+    depends_on:
+      - openldap
+      - zookeeper-1
+      - zookeeper-2
+      - zookeeper-3
+    ports:
+      - 19092:19092
+      - 19094:19094
+    volumes:
+      - ../volumes/simplest-possible-kafka-sasl-plaintext-ldap-authenticator-1.0.SNAPSHOT.jar:/usr/share/java/kafka/simplest-possible-kafka-sasl-plaintext-ldap-authenticator-1:re
+      - ../volumes/kafka_server_jaas.conf:/etc/kafka/kafka_server_jaas.conf
+      - ../volumes/broker-kafka-1/conf/etc/kafka
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_BROKER_RACK: DC_LOCAL_1 # what is datacenter
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper-1:2181,zookeeper-2:2182,zookeeper-3:2183"
+      KAFKA_OPTS: -Djava.security.auth.login.config=/etc/kafka/kafka_server_jaas.conf
+      #
+      KAFKA_LISTENERS: PLAINTEXT://:19092,PLAINTEXTHOST://:9092,NOAUTH://:19092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:SASL_PLAINTEXT,PLAINTEXTHOST:SASL_PLAINTEXT,NOAUTH:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://${host_ip}:19092,PLAINTEXTHOST://broker-1:9092,NOAUTH://${host_ip}:19092
+      #
+      KAFKA_BROKER_ID_GENERATION_ENABLE: "false"
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      #
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      #
+      KAFKA_INTER_BROKER_PROTOCOL_VERSION: 3.4
+      KAFKA_LOG_MESSAGE_FORMAT_VERSION: 3.4
+      #
+      KAFKA_LISTENER_NAME_PLAINTEXTHOST_PLAIN_SASL_SERVER_CALLBACK_HANDLER_CLASS: no.shhsoft.kafka.auth.LdapAuthenticateCallbackHandler
+      KAFKA_LISTENER_NAME_PLAINTEXT_PLAIN_SASL_SERVER_CALLBACK_HANDLER_CLASS: no.sshsoft.kafka.auth.LdapAuthenticateCallbackHandler
+      KAFKA_SASL_ENABLE_MECHANISMS: PLAIN
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXTHOST
+      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+      KAFKA_SUPER_USER: "User:service_kafka_uk"
+      #
+      KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
+      #
+      KAFKA_LISTENER_NAME_PLAINTEXTHOST_PLAIN_SASL_JAAS_CONFIG: |
+        org.apache.kafka.common.security.plain.PlainLoginModule required \
+        username="service_kafka_uk" \
+        password="kafka_password_test" \
+      #
+      KAFKA_AUTHN_LDAP_HOST: ldap
+      KAFKA_AUTHN_LDAP_PORT: 389
+      KAFKA_AUTHN_LDAP_BASE_DN: OU=Users,OU=UK,DC=devlab,DC=local
+      KAFKA_AUTHN_LDAP_USERNAME_TO_DN_PATTERN: CN=%s,ou=ServiceAccounts,dc=test,dc=local
+
+# akhq (ui)

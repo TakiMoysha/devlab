@@ -1,0 +1,48 @@
+services:
+  zookeeper-1:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper-1.cont.dev
+    restart: always
+    user: root
+    ports:
+      - 2181:2181
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_OPTS: -Djava.security.auth.login.config=/etc/kafka/zookeeper_server_jaas.conf
+      ZOOKEEPER_STANDALONE_ENABLED: false
+      ZOOKEEPER_SERVERS: zookeeper-1:2887:3887;zookeeper-2:2888:3888;zookeeper-3:2889:3889
+    volumes:
+      - ../volumes/zookeeper_server_jaas.conf:/etc/kafka/zookeeper_server_jaas.conf
+
+  zookeeper-2:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper-2.cont.dev
+    restart: always
+    user: root
+    ports:
+      - 2182:2182
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2182
+      ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_OPTS: -Djava.security.auth.login.config=/etc/kafka/zookeeper_server_jaas.conf
+      ZOOKEEPER_STANDALONE_ENABLED: false
+      ZOOKEEPER_SERVERS: zookeeper-1:2887:3887;zookeeper-2:2888:3888;zookeeper-3:2889:3889
+    volumes:
+      - ../volumes/zookeeper_server_jaas.conf:/etc/kafka/zookeeper_server_jaas.conf
+
+  zookeeper-3:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper-3.cont.dev
+    restart: always
+    user: root
+    ports:
+      - 2183:2183
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2183
+      ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_OPTS: -Djava.security.auth.login.config=/etc/kafka/zookeeper_server_jaas.conf
+      ZOOKEEPER_STANDALONE_ENABLED: false
+      ZOOKEEPER_SERVERS: zookeeper-1:2887:3887;zookeeper-2:2888:3888;zookeeper-3:2889:3889
+    volumes:
+      - ../volumes/zookeeper_server_jaas.conf:/etc/kafka/zookeeper_server_jaas.conf

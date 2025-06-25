@@ -1,0 +1,10 @@
+services:
+  openldap:
+    build: ldap
+    hostname: ldap
+    container_name: openldap.cont.dev
+    porst:
+      - 389:389
+      - 636:636
+    environment:
+      LDAP_TLS_VERIFY_CLIENT: try
