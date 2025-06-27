@@ -13,7 +13,7 @@ podman-rund-jellyfin:
   podman run \
     --detach \
     --label "io.containers.autoupdate=registry" \
-    --name media-server \
+    --name media_server \
     --publish 8096:8096/tcp \
     --rm \
     --user $(id -u):$(id -g) \
@@ -29,7 +29,7 @@ podman-rund-minio:
   podman run \
     --detach \
     --label "io.containers.autoupdate=registry" \
-    --name s3-server \
+    --name s3_server \
     --publish 9000:9000 \
     --publish 9001:9001 \
     --rm \
