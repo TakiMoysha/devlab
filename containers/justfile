@@ -11,11 +11,11 @@ gen-env username password:
 
 podman-rund-jellyfin:
   podman run \
+    --rm \
     --detach \
     --label "io.containers.autoupdate=registry" \
     --name media_server \
     --publish 8096:8096/tcp \
-    --rm \
     --user $(id -u):$(id -g) \
     --userns keep-id \
     --device nvidia.com/gpu=0 \
@@ -27,12 +27,12 @@ podman-rund-jellyfin:
 
 podman-rund-minio:
   podman run \
+    --rm \
     --detach \
     --label "io.containers.autoupdate=registry" \
     --name s3_server \
     --publish 9000:9000 \
     --publish 9001:9001 \
-    --rm \
     --user $(id -u):$(id -g) \
     --userns keep-id \
     --volume $STOREDIR/containers/s3:/data \
@@ -41,12 +41,20 @@ podman-rund-minio:
     quay.io/minio/minio server /data --console-address ":9001"
 
 
+# https://podman-desktop.io/docs/podman/gpu
 podman-test-nvidia:
   podman run --rm \
-  --device nvidia.com/gpu=0 \
-  nvidia/cuda:11.0.3-base-ubuntu20.04 nvidia-smi
+    --device nvidia.com/gpu=all \
+    nvidia/cuda:12.9.1-base-ubuntu20.04 \
+    nvidia-smi
+
+
+podman-rund-vert:
+  podman run --rm \
+    -p 3000:80 \
+    --name "vert" \
+    ghcr.io/vert-sh/vert:latest
 
 podman-rund-dokku:
   echo "TODO"
   # podman run 
-
