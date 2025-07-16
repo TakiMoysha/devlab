@@ -56,7 +56,6 @@ services:
     image: tchiotludo/akhq:latest
     networks:
       - kafka_aio_dev.net
-      - host
     depends_on:
       - zookeeper
     environment:
