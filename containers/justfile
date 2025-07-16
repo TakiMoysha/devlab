@@ -5,6 +5,9 @@ set dotenv-load
 
 #--device /dev/dri:/dev/dri:rwm \ - ?
 
+version := '0.1.1'
+tmpdir := `mktemp -du`
+
 gen-env username password:
   echo "CONTAINERS_S3_USER={{username}}" >> .env
   echo "CONTAINERS_S3_PASSWORD={{password}}" >> .env
@@ -46,13 +49,14 @@ podman-rund-esphome:
     -e ESPHOME_DASHBOARD_USE_PING=true \
     -it ghcr.io/esphome/esphome
 
-# https://podman-desktop.io/docs/podman/gpu
-podman-test-nvidia:
-  podman run --rm \
-    --device nvidia.com/gpu=all \
-    nvidia/cuda:12.9.1-base-ubuntu20.04 \
-    nvidia-smi
+[group: "openbb"]
+podman-openbb-build:
+  podman build -f ./openbb.containerfile -t openbb-platform-demo:latest .
 
+# ex: just podman-openbb-build podman-openbb-rund
+[group: "openbb"]
+podman-openbb-rund:
+  podman run -it --rm -p 6900:6900 openbb-platform-demo:latest 
 
 podman-rund-vert:
   podman run --rm \
@@ -60,6 +64,4 @@ podman-rund-vert:
     --name "vert" \
     ghcr.io/vert-sh/vert:latest
 
-podman-rund-dokku:
-  echo "TODO"
-  # podman run 
+mod test
