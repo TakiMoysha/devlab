@@ -49,6 +49,13 @@ podman-rund-esphome:
     -e ESPHOME_DASHBOARD_USE_PING=true \
     -it ghcr.io/esphome/esphome
 
+podman-rund-vaultwarden:
+   podman run --rm --detach --name vaultwarden \
+    --env DOMAIN="http://vw.localhost" \
+    --volume vaultwarden:/data/ \
+    --publish 127.0.0.1:8097:80 \
+    docker.io/vaultwarden/server:latest
+
 [group: "openbb"]
 podman-openbb-build:
   podman build -f ./openbb.containerfile -t openbb-platform-demo:latest .
