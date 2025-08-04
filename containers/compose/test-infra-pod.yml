@@ -1,0 +1,33 @@
+services:
+  app:
+    image: python:3.11-slim
+    hostname: http-server
+    command: |
+      python3 -m http.server 9001
+    ports:
+      - "8000:9001" # Контейнер будет доступен на хосте через localhost:8000
+    networks:
+      - private
+    restart: unless-stopped
+    container_name: infra-app
+
+  web:
+    image: curlimages/curl
+    command: |
+      sh -c "while true; do curl -s http://http-server:8001; sleep 1; done"
+    depends_on:
+      - app
+    networks:
+      - private
+    restart: on-failure:5
+    container_name: infra-web
+
+networks:
+  private:
+    name: podman-internal
+    driver: macvlan
+    ipam:
+      config:
+        - parent: wlan0
+          subnet: 192.168.1.0/24
+          gateway: 192.168.1.1

@@ -3,7 +3,7 @@ set dotenv-load
 # when: 
 # `--volume jellyfin-cache:/cache:Z` - source:destination:options, Z - zfs storage driver, for 
 
-#--device /dev/dri:/dev/dri:rwm \ - ?
+# --device /dev/dri:/dev/dri:rwm \ - ?
 
 version := '0.1.1'
 tmpdir := `mktemp -du`
