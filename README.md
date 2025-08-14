@@ -2,6 +2,16 @@
 
 Inspired by [Dev Home](https://learn.microsoft.com/en-us/windows/dev-home/).
 
+## Devlab
+
+- Keycloak - SSO
+- FreeIPA - LDAP
+
+- **Media-server**
+- **Service Cluster**
+
+Pi-Hole
+
 ## TODO
 
 ### Environment management

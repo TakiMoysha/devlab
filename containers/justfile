@@ -27,6 +27,17 @@ podman-rund-jellyfin:
     --mount type=bind,source=$STOREDIR,destination=/media,ro=true,relabel=private \
     docker.io/jellyfin/jellyfin:latest
 
+podman-rund-jellyfin-test:
+    podman run \
+      --rm \
+      --name media_server-test \
+      --publish 8096:8096/tcp \
+      --user 1000:1000 \
+      --device nvidia.com/gpu=0 \
+      --volume jellyfin-cache:/cache:Z \
+      --volume jellyfin-config:/config:Z \
+      --volume $STOREDIR:/media:U \
+      docker.io/jellyfin/jellyfin:latest
 
 podman-rund-minio:
   podman run \
