@@ -12,31 +12,19 @@ gen-env username password:
   echo "CONTAINERS_S3_USER={{username}}" >> .env
   echo "CONTAINERS_S3_PASSWORD={{password}}" >> .env
 
-podman-rund-jellyfin:
-  podman run \
-    --rm \
-    --detach \
-    --label "io.containers.autoupdate=registry" \
-    --name media_server \
-    --publish 8096:8096/tcp \
-    --user $(id -u):$(id -g) \
-    --userns keep-id \
-    --device nvidia.com/gpu=0 \
-    --volume jellyfin-cache:/cache:Z \
-    --volume jellyfin-config:/config:Z \
-    --mount type=bind,source=$STOREDIR,destination=/media,ro=true,relabel=private \
-    docker.io/jellyfin/jellyfin:latest
-
+[doc("""
+jellyfin image use 1000 (jellyfin user) and host use same 1000 user (STOREDIR also have 1000)
+""")]
 podman-rund-jellyfin-test:
     podman run \
       --rm \
+      --p 8096:8096/tcp \
       --name media_server-test \
-      --publish 8096:8096/tcp \
       --user 1000:1000 \
       --device nvidia.com/gpu=0 \
       --volume jellyfin-cache:/cache:Z \
       --volume jellyfin-config:/config:Z \
-      --volume $STOREDIR:/media:U \
+      --volume $STOREDIR/downloads:/media:Z \
       docker.io/jellyfin/jellyfin:latest
 
 podman-rund-minio:
