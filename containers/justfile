@@ -14,13 +14,13 @@ gen-env username password:
 
 [doc("""
 jellyfin image use 1000 (jellyfin user) and host use same 1000 user (STOREDIR also have 1000)
+added --user UID:GID if STOREDIR have another permissions
 """)]
-podman-rund-jellyfin-test:
+podman-rund-jellyfin:
     podman run \
+      -p 8096:8096/tcp \
       --rm \
-      --p 8096:8096/tcp \
-      --name media_server-test \
-      --user 1000:1000 \
+      --name media_server \
       --device nvidia.com/gpu=0 \
       --volume jellyfin-cache:/cache:Z \
       --volume jellyfin-config:/config:Z \
