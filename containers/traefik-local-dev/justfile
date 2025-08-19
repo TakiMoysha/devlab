@@ -1,0 +1,11 @@
+set dotenv-load
+
+export TM_DOMAIN_NAME := "devlab.localhost"
+export TM_AUTH_TOKEN := "1251230-don_expose_me"
+
+
+test:
+  echo "Hello from $TM_DOMAIN_NAME"
+
+podman-up:
+  podman-compose -f ./compose.yml up
