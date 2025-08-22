@@ -2,27 +2,30 @@ networks:
   dev-proxy:
     external: true
 
-  internal:
-    name: "devlab.localhost"
-    driver: bridge
-
 services:
   traefik:
     image: docker.io/library/traefik:latest
     container_name: devlab.localhost-proxy
     networks:
       - dev-proxy
-      # - internal
     ports:
-      # http port
+      # http port (docker)
       - 80:80
       # web ui
       - 8080:8080
+      # podman (rootless)
+      # - 8000:8000
+      # - 8080:8080
     environment:
       TM_AUTH_TOKEN: ${TM_AUTH_TOKEN}
-    command: --api.insecure=true --providers.docker
+    command:
+      - --api.insecure=true
+      - --providers.docker
+      - --entrypoints.http.address=:8000
+      - --entrypoints.websecure.address=:8080
     volumes:
       - ./traefik:/etc/traefik:ro
+      # docker
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      # - /var/run/podman.sock:/var/run/docker.sock:ro
-      # - /var/run/podman/podman.sock:/var/run/podman/podman.sock:ro
+      # podman
+      # - /run/user/1000/podman/podman.sock:/var/run/docker.sock:z

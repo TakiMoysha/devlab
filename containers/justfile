@@ -20,6 +20,7 @@ podman-rund-jellyfin:
     podman run \
       -p 8096:8096/tcp \
       --rm \
+      --detach \
       --name media_server \
       --device nvidia.com/gpu=0 \
       --volume jellyfin-cache:/cache:Z \

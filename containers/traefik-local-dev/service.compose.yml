@@ -9,8 +9,10 @@ services:
     networks:
       - dev-proxy
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.whoami.rule=Host(`${TM_DOMAIN_NAME}`) && PathPrefix(`/whoami`)"
-      - "traefik.http.routers.whoami.entrypoints=websecure"
-      - "traefik.http.routers.whoami.tls=true"
-      - "traefik.http.routers.whoami.tls.certresolver=myresolver"
+      - traefik.enable=true
+      - traefik.http.routers.whoami.rule=Host(`whoami2.local`)
+      - traefik.http.routers.whoami.entrypoints=websecure
+      - traefik.http.routers.whoami.tls=true
+      - traefik.http.routers.whoami.tls.certresolver=resolver
+      - traefik.http.routers.whoami2_route.service=whoami2_service
+      - traefik.http.services.whoami2_service.loadbalancer.server.port=80
