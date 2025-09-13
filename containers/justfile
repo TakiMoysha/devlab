@@ -17,16 +17,31 @@ jellyfin image use 1000 (jellyfin user) and host use same 1000 user (STOREDIR al
 added --user UID:GID if STOREDIR have another permissions
 """)]
 podman-rund-jellyfin:
-    podman run \
-      -p 8096:8096/tcp \
-      --rm \
-      --detach \
-      --name media_server \
-      --device nvidia.com/gpu=0 \
-      --volume jellyfin-cache:/cache:Z \
-      --volume jellyfin-config:/config:Z \
-      --volume $STOREDIR/downloads:/media:Z \
-      docker.io/jellyfin/jellyfin:latest
+  podman run \
+    -p 8096:8096/tcp \
+    --replace \
+    --detach \
+    --restart=always \
+    --name media_server \
+    --label "io.containers.autoupdate=registry" \
+    --device nvidia.com/gpu=0 \
+    --volume jellyfin-cache:/cache:Z \
+    --volume jellyfin-config:/config:Z \
+    --volume $STOREDIR/downloads:/media:Z \
+    docker.io/jellyfin/jellyfin
+
+[doc("""create container; generate unit-file: reload systemd: start container through systemd""")]
+podman-create-jellyfin:
+  podman create \
+    -p 8096:8096/tcp \
+    --name media_server \
+    --label "io.containers.autoupdate=registry" \
+    --device nvidia.com/gpu=0 \
+    --volume jellyfin-cache:/cache:Z \
+    --volume jellyfin-config:/config:Z \
+    --volume $STOREDIR/downloads:/media:Z \
+    docker.io/jellyfin/jellyfin
+
 
 podman-rund-minio:
   podman run \
