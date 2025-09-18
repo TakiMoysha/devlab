@@ -43,6 +43,29 @@ podman-create-jellyfin:
     docker.io/jellyfin/jellyfin
 
 
+[group: "llm"]
+[doc("qdrant - vectorestore for llms")]
+podman-rund-qdrant:
+  podman run \
+    --rm \
+    --detach \
+    --name dev-qdrant \
+    --label "io.containers.autoupdate=registry" \
+    --publish 6333:6333 \
+    --volume $STOREDIR/containers/qdrant:/data:z \
+    docker.io/qdrant/qdrant
+
+[group: "load-testing"]
+[doc("")]
+podman-rund-postgres-load:
+  podman run \
+    --rm \
+    --detach \
+    --name load-postgres \
+    --publish 5432:5432 \
+    --volume $STOREDIR/containers/load-postgres:/var/lib/postgresql/data:z \
+    postgres:17.2-alpine3.21
+
 podman-rund-minio:
   podman run \
     --rm \
