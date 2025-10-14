@@ -1,3 +1,4 @@
+# reference https://github.com/burhancodes/fagram-bin/blob/main/PKGBUILD
 # Maintainer: TakiMoysha <mpwema782@gmail.com>
 pkgname=kafkio
 pkgver=0.1.0
@@ -41,3 +42,4 @@ package() {
 post_install() {
     echo "==> KafkaIO установлен. Запустите 'kafkaio --help' для начала."
 }
+

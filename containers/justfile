@@ -16,6 +16,7 @@ gen-env username password:
 jellyfin image use 1000 (jellyfin user) and host use same 1000 user (STOREDIR also have 1000)
 added --user UID:GID if STOREDIR have another permissions
 """)]
+[group("media_server")]
 podman-rund-jellyfin:
   podman run \
     -p 8096:8096/tcp \
@@ -31,6 +32,7 @@ podman-rund-jellyfin:
     docker.io/jellyfin/jellyfin
 
 [doc("""create container; generate unit-file: reload systemd: start container through systemd""")]
+[group("media_server")]
 podman-create-jellyfin:
   podman create \
     -p 8096:8096/tcp \
@@ -41,7 +43,6 @@ podman-create-jellyfin:
     --volume jellyfin-config:/config:Z \
     --volume $STOREDIR/downloads:/media:Z \
     docker.io/jellyfin/jellyfin
-
 
 [group: "llm"]
 [doc("qdrant - vectorestore for llms")]
