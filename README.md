@@ -48,3 +48,7 @@ $DEVLAB_VOLUMES_DIR
 ### Docker & Podman integrations
 
 - tui for inspect-json
+
+### Scaffolding (baker)
+
+**[Baker](https://github.com/aliev/baker)** - cli tool for scaffolding new projects
