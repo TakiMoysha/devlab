@@ -4,8 +4,10 @@ Inspired by [Dev Home](https://learn.microsoft.com/en-us/windows/dev-home/).
 
 ## Devlab
 
-- Keycloak - SSO
+- Keycloak/Authentik - SSO
 - FreeIPA - LDAP
+
+- https://github.com/kubernetes-sigs/external-dns + https://github.com/cloudflare/cloudflared
 
 - **Media-server**
 - **Service Cluster**

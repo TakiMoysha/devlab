@@ -8,9 +8,13 @@ set dotenv-load
 version := '0.1.1'
 tmpdir := `mktemp -du`
 
+jellyfin_image := 'docker.io/jellyfin/jellyfin'
+
+
 gen-env username password:
   echo "CONTAINERS_S3_USER={{username}}" >> .env
   echo "CONTAINERS_S3_PASSWORD={{password}}" >> .env
+
 
 [doc("""
 jellyfin image use 1000 (jellyfin user) and host use same 1000 user (STOREDIR also have 1000)
@@ -29,7 +33,7 @@ podman-rund-jellyfin:
     --volume jellyfin-cache:/cache:Z \
     --volume jellyfin-config:/config:Z \
     --volume $STOREDIR/downloads:/media:Z \
-    docker.io/jellyfin/jellyfin
+    {{jellyfin_image}}
 
 [doc("""create container; generate unit-file: reload systemd: start container through systemd""")]
 [group("media_server")]
@@ -42,7 +46,7 @@ podman-create-jellyfin:
     --volume jellyfin-cache:/cache:Z \
     --volume jellyfin-config:/config:Z \
     --volume $STOREDIR/downloads:/media:Z \
-    docker.io/jellyfin/jellyfin
+    {{jellyfin_image}}
 
 [group: "llm"]
 [doc("qdrant - vectorestore for llms")]

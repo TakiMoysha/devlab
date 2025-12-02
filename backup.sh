@@ -5,6 +5,9 @@
 # Резервное копирование "сырых" файлов со сжатием и проверкой целостности
 # Use: ./backup-iso-compressed.sh <input_iso_file> <output_dir>
 # Example: ./backup-iso-compressed.sh /mnt/devlab/iso/ubuntu-22.04.iso /mnt/btrfs-backup/iso/
+# Example: find ./ -name "*.iso" -exec ./backup.sh {} /mnt/btrfs-backup/iso/ ; >> /var/log/iso-backup.log 2>&1
+# Unpack: zstd -d ubuntu-22.04.iso.zst -o /var/lib/vz/template/iso/ubuntu-22.04.iso
+# Check: md5sum -c ubuntu-22.04.iso.md5
 # ==============================================================================
 
 set -euo pipefail  # Exit on error
