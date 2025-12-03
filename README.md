@@ -17,6 +17,7 @@ Pi-Hole
 ## Nix
 
 Create backup for proxmox:
+
 ```shell
 nix run github:/nix-community/nixos-generators -- --format proxmox -c config.nix
 ```
@@ -28,12 +29,19 @@ scp /nix/store/<target>.vma.zst <user>@<address>:/home/<user>/
 ```
 
 Connect to the server, unpack and import the backup:
+
 ```shell
 unzstd <target>.vma.zst
 vma extract vzdump
 pct restore /mnt/backup/<target>.vma <id> # for lxc
 qmrestore /mnt/backup/<target>.vma <id> # for VM
 ```
+
+## Terraform & Tofu
+
+Используется tofu. Потенциально расширить с terragrrunt.
+
+- https://github.com/sergelogvinov/terraform-talos/tree/main/proxmox
 
 ## TODO
 

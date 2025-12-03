@@ -1,0 +1,44 @@
+# Save the output of this file and use kubectl create -f to import
+# it into Kubernetes.
+#
+# Created with podman-5.6.0
+---
+apiVersion: v1
+kind: Pod
+replicas: 2
+metadata:
+  annotations:
+    bind-mount-options: /home/takimoysha/linux-media/downloads:Z
+  creationTimestamp: "2025-08-29T12:54:05Z"
+  labels:
+    app: mediaserver-test-pod
+  name: mediaserver-test-pod
+spec:
+  containers:
+  - image: docker.io/jellyfin/jellyfin:latest
+    name: mediaserver-test
+    volumeMounts:
+    - mountPath: /media
+      name: home-takimoysha-linux-media-downloads-host-0
+    - mountPath: /cache
+      name: jellyfin-cache-pvc
+    - mountPath: /config
+      name: jellyfin-config-pvc
+    securityContext:
+      capabilities:
+        drop:
+          - CAP_MKNOD
+          - CAP_NET_RAW
+          - CAP_AUDIT_WRITE
+  volumes:
+  - hostPath:
+      path: /home/takimoysha/linux-media/downloads
+      type: Directory
+    name: home-takimoysha-linux-media-downloads-host-0
+  - name: jellyfin-cache-pvc
+    persistentVolumeClaim:
+      claimName: jellyfin-cache
+  - name: jellyfin-config-pvc
+    persistentVolumeClaim:
+      claimName: jellyfin-config
+    
