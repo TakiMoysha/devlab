@@ -1,3 +1,5 @@
+set dotenv-load
+
 export PM_API_URL:="http://edge.arpa/api2/json"
 export PM_API_TOKEN_ID:="terraform-prov@pve!pcl-89-infra"
 export PM_API_TOKEN_SECRET:="9b868951-4ede-411b-885b-43f8786a76ec"
@@ -15,3 +17,6 @@ nix-update flake_target:
 init-proxmox-terraform:
   tofu init
   tofu apply
+
+
+mod test "containers/justfile"
