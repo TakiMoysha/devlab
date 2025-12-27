@@ -3,8 +3,11 @@ terraform {
 
   required_providers {
     proxmox = {
-      source = "telmate/proxmox"
-      version = "3.0.2-rc06"
+      # source = "telmate/proxmox"
+      # version = "3.0.2-rc06"
+
+      source = "bpg/proxmox"
+      version = "0.90.0"
     }
   }
 }
@@ -15,5 +18,3 @@ provider "proxmox" {
   pm_api_token_secret = "9b868951-4ede-411b-885b-43f8786a76ec"
   pm_tls_insecure     = true
 }
-
-
