@@ -2,7 +2,6 @@ set dotenv-load
 
 # when: 
 # `--volume jellyfin-cache:/cache:Z` - source:destination:options, Z - zfs storage driver, for 
-
 # --device /dev/dri:/dev/dri:rwm \ - ?
 
 version := '0.1.1'
@@ -11,9 +10,15 @@ tmpdir := `mktemp -du`
 jellyfin_image := 'docker.io/jellyfin/jellyfin'
 
 
-gen-env username password:
+gen-env username password books_dir:
+  echo "DEVLAB__BOOKS_DIR={{books_dir}}" >> .env
   echo "CONTAINERS_S3_USER={{username}}" >> .env
   echo "CONTAINERS_S3_PASSWORD={{password}}" >> .env
+
+[linux]
+nvidia-gpu-install:
+  pkexec nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml && nvidia-ctk cdi list
+
 
 
 [doc("""
@@ -22,17 +27,16 @@ added --user UID:GID if STOREDIR have another permissions
 """)]
 [group("media_server")]
 podman-rund-jellyfin:
-  podman run \
+  podman run -d \
     -p 8096:8096/tcp \
     --replace \
-    --detach \
     --restart=always \
     --name media_server \
     --label "io.containers.autoupdate=registry" \
     --device nvidia.com/gpu=0 \
-    --volume jellyfin-cache:/cache:Z \
-    --volume jellyfin-config:/config:Z \
-    --volume $STOREDIR/downloads:/media:Z \
+    --volume jellyfin-cache:/cache \
+    --volume jellyfin-config:/config \
+    --volume $STOREDIR/videos:/media:z \
     {{jellyfin_image}}
 
 [doc("""create container; generate unit-file: reload systemd: start container through systemd""")]
@@ -43,10 +47,24 @@ podman-create-jellyfin:
     --name media_server \
     --label "io.containers.autoupdate=registry" \
     --device nvidia.com/gpu=0 \
-    --volume jellyfin-cache:/cache:Z \
-    --volume jellyfin-config:/config:Z \
-    --volume $STOREDIR/downloads:/media:Z \
+    --volume jellyfin-cache:/cache \
+    --volume jellyfin-config:/config \
+    --volume $STOREDIR/videos:/media:z \
     {{jellyfin_image}}
+
+
+[group: "media-server"]
+[doc("Media Server for ebooks.")]
+podman-rund-kavita:
+  podman run -d \
+    --replace \
+    -p 5000:5000 \
+    -e PGID=1000 \
+    -e PUID=1000 \
+   --name=elibrary \
+    -v kavita-config:/config \
+    -v $DEVLAB__BOOKS_DIR:/library/books \
+    lscr.io/linuxserver/kavita:latest
 
 [group: "llm"]
 [doc("qdrant - vectorestore for llms")]
