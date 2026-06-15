@@ -36,7 +36,8 @@ fi
 
 DURATION=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$INPUT")
 
-if [ -z "$DURATION" ] || [ "$(echo "$DURATION <= 0" | bc)" -eq 1 ]; then
+# if [ -z "$DURATION" ] || [ "$(echo "$DURATION <= 0" | bc)" -eq 1 ]; then
+if [ -z "$DURATION" ] || [ "${DURATION%.*}" -le 0 ] 2>/dev/null; then
     echo "[ERROR] Can't get video duration."
     exit 1
 fi
@@ -45,7 +46,8 @@ echo "Generate preview (seeking)..."
 echo "[DEBUG] $INPUT $OUTPUT $DURATION"
 
 for i in $(seq 0 $((IMAGES_TO_PREVIEW - 1))); do
-    TIMESTAMP=$(echo "$DURATION * ($i + 0.5) / $IMAGES_TO_PREVIEW" | bc -l)
+    TIMESTAMP=$(awk "BEGIN {print $DURATION * ($i + 0.5) / $IMAGES_TO_PREVIEW}")
+    # TIMESTAMP=$(echo "$DURATION * ($i + 0.5) / $IMAGES_TO_PREVIEW" | bc -l)
     ffmpeg -ss "$TIMESTAMP" -i "$INPUT" -vframes 1 -q:v 2 "$TMP_DIR/frame_${i}.jpg" 2>/dev/null
 done
 
