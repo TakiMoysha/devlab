@@ -126,6 +126,8 @@ podman-openbb-build:
 podman-openbb-rund:
   podman run -it --rm -p 6900:6900 openbb-platform-demo:latest 
 
+podman-rund-wakapi:
+  podman run -d --rm  -p 7001:3000 --init -v wakapi-data:/data --name wakapi ghcr.io/muety/wakapi:latest
 podman-rund-vert:
   podman run --rm \
     -p 3000:80 \
