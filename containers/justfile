@@ -66,6 +66,21 @@ podman-rund-kavita:
     -v $DEVLAB__BOOKS_DIR:/library/books \
     lscr.io/linuxserver/kavita:latest
 
+[group: "media-server"]
+[doc("Medisa Server for music")]
+podman-rund-musicseerr:
+  podman run -d \
+    --name musicseerr \
+    -e PUID=1000 \
+    -e PGID=1000 \
+    -e PORT=8688 \
+    -e TZ=Etc/UTC \
+    -p 8688:8688 \
+    -v musicseerr-config:/app/config \
+    -v musicseerr-cache:/app/cache \
+    -v $STOREDIR/music:/media:ro \
+    ghcr.io/habirabbu/musicseerr:latest
+
 [group: "llm"]
 [doc("qdrant - vectorestore for llms")]
 podman-rund-qdrant:
