@@ -1,0 +1,15 @@
+[user]
+	email = 36836047+TakiMoysha@users.noreply.github.com
+	name = TakiMoysha
+
+[init]
+	defaultBranch = main
+
+[url "git@github.com:takimoysha/"]
+	insteadOf = https://github.com/TakiMoysha/
+
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true

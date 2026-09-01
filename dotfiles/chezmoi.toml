@@ -1,0 +1,9 @@
+format = "toml"
+
+[admissionControl]
+enabled = false
+
+[data]
+author = "TakiMoysha"
+email = "mpwema782@gmail.com"
+cpuTier = "v4"

@@ -1,152 +1,168 @@
 set dotenv-load
 
-# when: 
-# `--volume jellyfin-cache:/cache:Z` - source:destination:options, Z - zfs storage driver, for 
+# when:
+# `--volume jellyfin-cache:/cache:Z` - source:destination:options, Z - zfs storage driver, for
 # --device /dev/dri:/dev/dri:rwm \ - ?
 
 version := '0.1.1'
 tmpdir := `mktemp -du`
 
-jellyfin_image := 'docker.io/jellyfin/jellyfin'
-
+jellyfin_image := 'docker.io/jellyfin/jellyfin:preview'
 
 gen-env username password books_dir:
-  echo "DEVLAB__BOOKS_DIR={{books_dir}}" >> .env
-  echo "CONTAINERS_S3_USER={{username}}" >> .env
-  echo "CONTAINERS_S3_PASSWORD={{password}}" >> .env
+    echo "DEVLAB__BOOKS_DIR={{ books_dir }}" >> .env
+    echo "CONTAINERS_S3_USER={{ username }}" >> .env
+    echo "CONTAINERS_S3_PASSWORD={{ password }}" >> .env
 
 [linux]
 nvidia-gpu-install:
-  pkexec nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml && nvidia-ctk cdi list
-
-
+    pkexec nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml && nvidia-ctk cdi list
 
 [doc("""
 jellyfin image use 1000 (jellyfin user) and host use same 1000 user (STOREDIR also have 1000)
 added --user UID:GID if STOREDIR have another permissions
 """)]
-[group("media_server")]
+[group("media-server")]
 podman-rund-jellyfin:
-  podman run -d \
-    -p 8096:8096/tcp \
-    --replace \
-    --restart=always \
-    --name media_server \
-    --label "io.containers.autoupdate=registry" \
-    --device nvidia.com/gpu=0 \
-    --volume jellyfin-cache:/cache \
-    --volume jellyfin-config:/config \
-    --volume $STOREDIR/videos:/media:z \
-    {{jellyfin_image}}
+    podman run -d \
+      -p 8096:8096/tcp \
+      --replace \
+      --restart=always \
+      --name media_server \
+      --label "io.containers.autoupdate=registry" \
+      --device nvidia.com/gpu=0 \
+      --volume jellyfin-cache:/cache \
+      --volume jellyfin-config:/config \
+      --volume $STOREDIR/videos:/media:z \
+      {{ jellyfin_image }}
 
 [doc("""create container; generate unit-file: reload systemd: start container through systemd""")]
-[group("media_server")]
+[group("media-server")]
 podman-create-jellyfin:
-  podman create \
-    -p 8096:8096/tcp \
-    --name media_server \
-    --label "io.containers.autoupdate=registry" \
-    --device nvidia.com/gpu=0 \
-    --volume jellyfin-cache:/cache \
-    --volume jellyfin-config:/config \
-    --volume $STOREDIR/videos:/media:z \
-    {{jellyfin_image}}
+    podman create \
+      -p 8096:8096/tcp \
+      --name media_server \
+      --label "io.containers.autoupdate=registry" \
+      --device nvidia.com/gpu=0 \
+      --volume jellyfin-cache:/cache \
+      --volume jellyfin-config:/config \
+      --volume $STOREDIR/videos:/media:z \
+      {{ jellyfin_image }}
 
-
-[group: "media-server"]
 [doc("Media Server for ebooks.")]
+[group("media-server")]
 podman-rund-kavita:
-  podman run -d \
-    --replace \
-    -p 5000:5000 \
-    -e PGID=1000 \
-    -e PUID=1000 \
-   --name=elibrary \
-    -v kavita-config:/config \
-    -v $DEVLAB__BOOKS_DIR:/library/books \
-    lscr.io/linuxserver/kavita:latest
+    podman run -d \
+      --replace \
+      -p 5000:5000 \
+      -e PGID=1000 \
+      -e PUID=1000 \
+     --name=elibrary \
+      -v kavita-config:/config \
+      -v $DEVLAB__BOOKS_DIR:/library/books \
+      lscr.io/linuxserver/kavita:latest
 
-[group: "media-server"]
 [doc("Medisa Server for music")]
+[group("media-server")]
 podman-rund-musicseerr:
-  podman run -d \
-    --name musicseerr \
-    -e PUID=1000 \
-    -e PGID=1000 \
-    -e PORT=8688 \
-    -e TZ=Etc/UTC \
-    -p 8688:8688 \
-    -v musicseerr-config:/app/config \
-    -v musicseerr-cache:/app/cache \
-    -v $STOREDIR/music:/media:ro \
-    ghcr.io/habirabbu/musicseerr:latest
+    podman run -d \
+      --name musicseerr \
+      -e PUID=1000 \
+      -e PGID=1000 \
+      -e PORT=8688 \
+      -e TZ=Etc/UTC \
+      -p 8688:8688 \
+      -v musicseerr-config:/app/config \
+      -v musicseerr-cache:/app/cache \
+      -v $STOREDIR/music:/media:ro \
+      ghcr.io/habirabbu/musicseerr:latest
 
-[group: "llm"]
+[doc("Development services")]
+[group("development")]
+surreal-run-dev *ARGS:
+  @surreal start --user dev-worker --password 123123 --bind 0.0.0.0:6001 {{ARGS}}
+
 [doc("qdrant - vectorestore for llms")]
+[group("llm")]
 podman-rund-qdrant:
-  podman run \
-    --rm \
-    --detach \
-    --name dev-qdrant \
-    --label "io.containers.autoupdate=registry" \
-    --publish 6333:6333 \
-    --volume $STOREDIR/containers/qdrant:/data:z \
-    docker.io/qdrant/qdrant
+    podman run \
+      --rm \
+      --detach \
+      --name dev-qdrant \
+      --label "io.containers.autoupdate=registry" \
+      --publish 6333:6333 \
+      --volume $STOREDIR/containers/qdrant:/data:z \
+      docker.io/qdrant/qdrant
 
-[group: "load-testing"]
 [doc("")]
+[group("load-testing")]
 podman-rund-postgres-load:
-  podman run \
-    --rm \
-    --detach \
-    --name load-postgres \
-    --publish 5432:5432 \
-    --volume $STOREDIR/containers/load-postgres:/var/lib/postgresql/data:z \
-    postgres:17.2-alpine3.21
+    podman run \
+      --rm \
+      --detach \
+      --name load-postgres \
+      --publish 5432:5432 \
+      --volume $STOREDIR/containers/load-postgres:/var/lib/postgresql/data:z \
+      postgres:17.2-alpine3.21
 
 podman-rund-minio:
-  podman run \
-    --rm \
-    --detach \
-    --label "io.containers.autoupdate=registry" \
-    --name s3_server \
-    --publish 9000:9000 \
-    --publish 9001:9001 \
-    --user $(id -u):$(id -g) \
-    --userns keep-id \
-    --volume $STOREDIR/containers/s3:/data \
-    -e "MINIO_ROOT_USER=$CONTAINERS_S3_USER" \
-    -e "MINIO_ROOT_PASSWORD=$CONTAINERS_S3_PASSWORD" \
-    quay.io/minio/minio server /data --console-address ":9001"
+    podman run \
+      --rm \
+      --detach \
+      --label "io.containers.autoupdate=registry" \
+      --name s3_server \
+      --publish 9000:9000 \
+      --publish 9001:9001 \
+      --user $(id -u):$(id -g) \
+      --userns keep-id \
+      --volume $STOREDIR/containers/s3:/data \
+      -e "MINIO_ROOT_USER=$CONTAINERS_S3_USER" \
+      -e "MINIO_ROOT_PASSWORD=$CONTAINERS_S3_PASSWORD" \
+      quay.io/minio/minio server /data --console-address ":9001"
 
 podman-rund-esphome:
-  podman run --rm \
-    -p 6052:6052 \
-    -e ESPHOME_DASHBOARD_USE_PING=true \
-    -it ghcr.io/esphome/esphome
+    podman run --rm \
+      -p 6052:6052 \
+      -e ESPHOME_DASHBOARD_USE_PING=true \
+      -it ghcr.io/esphome/esphome
 
 podman-rund-vaultwarden:
-   podman run --rm --detach --name vaultwarden \
-    --env DOMAIN="http://vw.localhost" \
-    --volume vaultwarden:/data/ \
-    --publish 127.0.0.1:8097:80 \
-    docker.io/vaultwarden/server:latest
+    podman run --rm --detach --name vaultwarden \
+     --env DOMAIN="http://vw.localhost" \
+     --volume vaultwarden:/data/ \
+     --publish 127.0.0.1:8097:80 \
+     docker.io/vaultwarden/server:latest
 
-[group: "openbb"]
+[group("openbb")]
 podman-openbb-build:
-  podman build -f ./openbb.containerfile -t openbb-platform-demo:latest .
+    podman build -f ./openbb.containerfile -t openbb-platform-demo:latest .
 
 # ex: just podman-openbb-build podman-openbb-rund
-[group: "openbb"]
+[group("openbb")]
 podman-openbb-rund:
-  podman run -it --rm -p 6900:6900 openbb-platform-demo:latest 
+    podman run -it --rm -p 6900:6900 openbb-platform-demo:latest 
 
 podman-rund-wakapi:
-  podman run -d --rm  -p 7001:3000 --init -v wakapi-data:/data --name wakapi ghcr.io/muety/wakapi:latest
-podman-rund-vert:
-  podman run --rm \
-    -p 3000:80 \
-    --name "vert" \
-    ghcr.io/vert-sh/vert:latest
+    podman run -d -p 7001:3000 --init -v wakapi-data:/data --name wakapi ghcr.io/muety/wakapi:latest
 
+# store secrets (instead .enf)
+podman-rund-infisical:
+    podman run -d --rm -p 7002:8080 -e ENCRYPTION_KEY=f40c9178624764ad85a6830b37ce239a -e AUTH_SECRET="q6LRi7c717a3DQ8JUxlWYkZpMhG4+RHLoFUVt3Bvo2U=" infisical/infisical
+
+podman-rund-vert:
+    podman run --rm \
+      -p 3000:80 \
+      --name "vert" \
+      ghcr.io/vert-sh/vert:latest
+
+podman-rund-greptime:
+    podman run --rm \
+      -p 127.0.0.1:4000-4003:4000-4003 \
+      -v $STOREDIR/.cache/containers/greptime:/greptimedb_data:z \
+      --name greptime-demo \
+      greptime/greptimedb:latest standalone start \
+        --http-addr 0.0.0.0:4000 \
+        --rpc-bind-addr 0.0.0.0:4001 \
+        --mysql-addr 0.0.0.0:4002 \
+        --postgres-addr 0.0.0.0:4003 \
 mod test
