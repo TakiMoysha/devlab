@@ -8,6 +8,9 @@
 
 START_TIME=$(date +%s)
 
+TILE_COLS=3
+TILE_ROWS=3
+
 INPUT="$1"
 IMAGES_TO_PREVIEW=9
 TMP_DIR=$(mktemp -d)
@@ -15,6 +18,7 @@ TMP_PREVIEW_FILE="$TMP_DIR/preview.png"
 OUTPUT="${INPUT%.*}_preview.mp4"
 # ================================================
 cleanup() {
+    echo "[INFO] Remove <$TMP_DIR>"
     rm -rf "$TMP_DIR"
 }
 trap cleanup EXIT
@@ -31,6 +35,11 @@ fi
 
 if ! ffprobe -v error "$INPUT" 2>/dev/null; then
     echo "[ERROR] '$INPUT' is not a valid video file!"
+    exit 1
+fi
+
+if ! command -v montage &>/dev/null; then
+    echo "[ERROR] montage (ImageMagick) is required. Install it first."
     exit 1
 fi
 
@@ -51,8 +60,6 @@ for i in $(seq 0 $((IMAGES_TO_PREVIEW - 1))); do
     ffmpeg -ss "$TIMESTAMP" -i "$INPUT" -vframes 1 -q:v 2 "$TMP_DIR/frame_${i}.jpg" 2>/dev/null
 done
 
-TILE_COLS=3
-TILE_ROWS=3
 montage "${TMP_DIR}/frame_"*.jpg -tile ${TILE_COLS}x${TILE_ROWS} -geometry +2+2 "$TMP_PREVIEW_FILE" 2>/dev/null
 
 if [ ! -f "$TMP_PREVIEW_FILE" ] || [ ! -s "$TMP_PREVIEW_FILE" ]; then
@@ -60,8 +67,28 @@ if [ ! -f "$TMP_PREVIEW_FILE" ] || [ ! -s "$TMP_PREVIEW_FILE" ]; then
     exit 1
 fi
 
-echo "Embedded preview into file..."
-ffmpeg -i "$INPUT" -i "$TMP_PREVIEW_FILE" -map 0 -map 1 -c copy -c:v:1 png -disposition:v:1 attached_pic "$OUTPUT" 2>/dev/null
+# === compress preview image ===
+echo "[INFO] Compress Preview Image"
+
+magic convert "$TMP_PREVIEW_FILE" -resize 1920x1080 -background black -gravity center -extent 1920x1080 "$TMP_PREVIEW_FILE"
+
+if [ ! -f "$TMP_PREVIEW_FILE" ] || [ ! -s "$TMP_PREVIEW_FILE" ]; then
+    echo "[ERROR] Resize failed"
+    exit 1
+fi
+
+# === embedded preview ===
+echo "[INFO] Embedded Preview"
+
+ffmpeg -i "$INPUT" -i "$TMP_PREVIEW_FILE" \
+    -map 0:v:0 -map 0:a -map 1 \
+    -c copy \
+    -c:v:1 png \
+    -disposition:v:0 default \
+    -disposition:v:1 attached_pic \
+    -metadata:s:v:0 title="Video" \
+    -metadata:s:v:1 title="Cover Art" \
+    "$OUTPUT" 2>/dev/null
 
 if [ $? -eq 0 ] && [ -f "$OUTPUT" ]; then
     echo "[INFO] Success!"

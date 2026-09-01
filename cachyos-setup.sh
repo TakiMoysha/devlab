@@ -95,15 +95,12 @@ install_user_packages() {
         tmux
         firefox
         neovim
+        neovide
         ripgrep
-        bat
-        eza
         fd
         diffutils
         htop
         powertop
-        ghostty
-        i3-gaps
         rustup
         cloudflare-speed-cli
         obs-studio
@@ -112,6 +109,7 @@ install_user_packages() {
         # Инфраструктура и Демоны
         caddy
         podman
+        opencode
         
         # GUI & Разработка
         obsidian
@@ -124,6 +122,9 @@ install_user_packages() {
     run_as_user paru -S --noconfirm --needed "${pkgs[@]}"
 
     run_as_user_zsh "rustup default stable"
+
+    local not_implemented_pkgs=(hytale)
+    echo "WIP: ${not_implemented_pkgs[@]}"
 }
 
 reboot_prompt() {
