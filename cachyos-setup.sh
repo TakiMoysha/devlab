@@ -6,7 +6,7 @@ REAL_USER="${SUDO_USER:-$USER}"
 USER_HOME=$(eval echo "~${REAL_USER}")
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DEVLAB_DIR="${SCRIPT_DIR}/.."
+DEVLAB_DIR="${SCRIPT_DIR}"
 DOTFILES_DIR="${DEVLAB_DIR}/dotfiles"
 DEVLAB_REPO="${DEVLAB_REPO:-git@github.com:takimoysha/devlab}"
 
@@ -98,18 +98,29 @@ install_user_packages() {
         neovide
         ripgrep
         fd
+	    tree
+	    zoxide
         diffutils
         htop
         powertop
         rustup
         cloudflare-speed-cli
         obs-studio
-        steam
-        
+	    downgrade
+	    s-tui
+
         # Инфраструктура и Демоны
         caddy
         podman
+	    podman-compose
+	    nvidia-container-toolkit
         opencode
+	    act
+	    github-cli
+	    lazygit
+	    just
+	    mise
+	    tealdeer
         
         # GUI & Разработка
         obsidian
@@ -117,15 +128,43 @@ install_user_packages() {
         lmstudio-bin
         sublime-text-4
         sublime-merge
+
+        # appearence
+        nwg-look # for gtk
+        kvantum # for QT
     )
 
     run_as_user paru -S --noconfirm --needed "${pkgs[@]}"
 
     run_as_user_zsh "rustup default stable"
 
-    local not_implemented_pkgs=(hytale)
+    local devtools=(
+	    bun
+	    rustup
+    )
+    echo "DEVTOOLS: ${devtools[@]}"
+
+    local not_implemented_pkgs=(
+	    hytale
+	    steam
+	    protonup-qt
+	    godot 
+    )
     echo "WIP: ${not_implemented_pkgs[@]}"
+
+    local optional=(
+        imhex
+	    ouch
+        websocat
+    )
+    echo "OPTIONAL: ${optional[@]}"
+
+    local via_mise=(
+        node # global
+    )
+    echo "INSTALL TOOLS via MISE "
 }
+
 
 reboot_prompt() {
     echo ""
