@@ -1,0 +1,5 @@
+---
+OnlyWhitelisted: false
+WhitelistMode: 1
+VerifyPlayerAuth: false
+AdvertiseServer: false

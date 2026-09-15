@@ -6,6 +6,7 @@ set dotenv-load
 
 version := '0.1.1'
 tmpdir := `mktemp -du`
+workdir := justfile_directory()
 
 jellyfin_image := 'docker.io/jellyfin/jellyfin:preview'
 
@@ -80,7 +81,7 @@ podman-rund-musicseerr:
 [doc("Development services")]
 [group("development")]
 surreal-run-dev *ARGS:
-  @surreal start --user dev-worker --password 123123 --bind 0.0.0.0:6001 {{ARGS}}
+    @surreal start --user dev-worker --password 123123 --bind 0.0.0.0:6001 {{ ARGS }}
 
 [doc("qdrant - vectorestore for llms")]
 [group("llm")]
@@ -165,4 +166,20 @@ podman-rund-greptime:
         --rpc-bind-addr 0.0.0.0:4001 \
         --mysql-addr 0.0.0.0:4002 \
         --postgres-addr 0.0.0.0:4003 \
+
+
+# for backup data: pdm cp vintage-server-data:/vintagestory/data /path/to/backup
+podman-rund-vintageserver:
+    podman run -d --replace \
+      --name vintagestory-server \
+      -p 42420:42420/tcp \
+      -p 42420:42420/udp \
+      -v vintage-server-data:/vintagestory/data \
+      -v ./vs-server-config.yaml:/vintagestory/serverconfig.yaml \
+      -e VS_CFG_SERVER_NAME="obsidian:dev" \
+      -e VS_CFG_SERVER_PASSWORD="abc123" \
+      -e VS_CFG_ADVERTISE_SERVER=false \
+      -e VS_CFG_ENFORCE_WHITELIST=1 \
+      ghcr.io/darkmatterproductions/vintagestory:1.22.7
+
 mod test
